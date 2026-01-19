@@ -20,7 +20,7 @@ class NotePatchService {
         $note = $this->em->getRepository(Note::class)->find($id);
 
         if (!$note) {
-            throw new NoteNotFoundException('No note found for id'.$id);
+            throw new NoteNotFoundException('No note found for id ' . $id);
         }
         
         if ($dto->title !== null) {

@@ -13,6 +13,7 @@ use App\Service\NoteCreateService;
 use App\Service\NoteReadService;
 use App\Service\NoteListService;
 use App\Service\NotePatchService;
+use App\Service\NoteDeleteService;
 use App\Exception\NoteNotFoundException;
 
 class NoteController extends AbstractController
@@ -89,7 +90,7 @@ class NoteController extends AbstractController
     }
 
     #[Route('/api/note/{id}', name: 'patch_note', methods:['PATCH'])]
-    public function updateNotes(int $id, Request $request, ValidatorInterface $validator, NotePatchService $notePatchService): JsonResponse
+    public function updateNote(int $id, Request $request, ValidatorInterface $validator, NotePatchService $notePatchService): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         
@@ -138,5 +139,20 @@ class NoteController extends AbstractController
         'content' => $note->getContent(),
         'createdAt' => $note->getCreatedAt()->format('Y-m-d H:i:s'),
         ], 200);
+    }
+
+    #[Route('/api/note/{id}', name: 'delete_note', methods:['DELETE'])]
+    public function deleteNote(int $id, NoteDeleteService $noteDeleteService):JsonResponse
+    {
+        try {
+            $noteDeleteService->deleteNote($id);
+        } catch (NoteNotFoundException $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                404
+            );    
+        }
+
+        return $this->json(null, 204);
     }
 }

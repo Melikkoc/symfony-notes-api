@@ -21,6 +21,7 @@ The codebase is intentionally structured to reflect real-world backend practices
 -   Sorting (id, title, createdAt)
 -   Filtering by title (search)
 -   Partial updates using PATCH
+-   Delete notes
 -   Input validation with meaningful HTTP status codes
 -   Business logic isolated in services
 
@@ -111,6 +112,14 @@ Responses:
 404 Not Found  
 422 Unprocessable Entity
 
+### Delete note
+
+DELETE /api/note/{id}
+
+Responses:
+204 No Content  
+404 Not Found
+
 ## HTTP Semantics
 
 This API follows common REST conventions:
@@ -176,7 +185,7 @@ http://localhost:8000
 -   Sorting: done
 -   Filtering: done
 -   Update (PATCH): done
--   Delete: pending
+-   Delete: done
 -   Response DTOs: pending
 -   Authentication & authorization: pending
 
@@ -187,3 +196,8 @@ backend development with Symfony.
 
 The focus is on correctness, clarity, and long-term maintainability rather than
 shortcuts or framework magic.
+
+## Notes
+
+This repository is actively evolving.  
+API documentation, internal structure, and supporting files may change as new features are added and the architecture is refined.
