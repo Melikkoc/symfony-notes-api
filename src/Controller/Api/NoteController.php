@@ -21,7 +21,7 @@ use App\Mapper\NoteResponseMapper;
 class NoteController extends AbstractController
 {
     #[Route('/api/note', name: 'api_note', methods: ['POST'])]
-    public function createNoteRequest(Request $request, ValidatorInterface $validator, NoteCreateService $noteCreateService ): JsonResponse
+    public function createNoteRequest(Request $request, ValidatorInterface $validator, NoteCreateService $noteCreateService, NoteResponseMapper $mapper): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
@@ -49,12 +49,8 @@ class NoteController extends AbstractController
         }
         $note = $noteCreateService->createNote($dto);
             
-        return $this->json([
-        'id' => $note->getId(),
-        'title' => $note->getTitle(),
-        'content' => $note->getContent(),
-        'createdAt' => $note->getCreatedAt()->format('Y-m-d H:i:s'),
-        ], 201);
+        $responseDto = $mapper->mapNote($note);
+        return $this->json($responseDto, 201);
     }
 
     #[Route('/api/note/{id}', name: 'get_note', methods:['GET'])]
@@ -65,13 +61,13 @@ class NoteController extends AbstractController
         if ($note === null) {
             return $this->json(['error' => 'Note not found'], 404);
         } 
-        
-        $dto = $mapper->mapNote($note);
-        return $this->json($dto, 200);
+
+        $responseDto = $mapper->mapNote($note);
+        return $this->json($responseDto, 200);
     }
 
     #[Route('/api/note', name: 'get_notes', methods:['GET'])]
-    public function getNotes(Request $request, NoteListService $noteList, ): JsonResponse
+    public function getNotes(Request $request, NoteListService $noteList, NoteResponseMapper $mapper): JsonResponse
     {
 
         $page = (int) $request->query->get('page');
@@ -83,13 +79,14 @@ class NoteController extends AbstractController
 
         $notes = $noteList->listNotes($page, $limit, $sortBy, $order, $search);
 
+        
         return $this->json([
             'notes' => $notes
         ], 200);
     }
 
     #[Route('/api/note/{id}', name: 'patch_note', methods:['PATCH'])]
-    public function updateNote(int $id, Request $request, ValidatorInterface $validator, NotePatchService $notePatchService): JsonResponse
+    public function updateNote(int $id, Request $request, ValidatorInterface $validator, NotePatchService $notePatchService, NoteResponseMapper $mapper): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         
@@ -132,12 +129,8 @@ class NoteController extends AbstractController
             );    
         }
 
-        return $this->json([
-        'id' => $note->getId(),
-        'title' => $note->getTitle(),
-        'content' => $note->getContent(),
-        'createdAt' => $note->getCreatedAt()->format('Y-m-d H:i:s'),
-        ], 200);
+        $responseDto = $mapper->mapNote($note);
+        return $this->json($responseDto, 200);
     }
 
     #[Route('/api/note/{id}', name: 'delete_note', methods:['DELETE'])]
