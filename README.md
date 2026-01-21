@@ -10,6 +10,9 @@ This project is a backend learning playground focused on:
 -   pagination, sorting and filtering
 -   proper error handling
 -   RESTful API design
+-   Response DTOs for all API outputs
+-   Explicit response mapping (Entity → DTO)
+-   Stable and predictable API response schema
 
 The codebase is intentionally structured to reflect real-world backend practices.
 
@@ -137,6 +140,9 @@ This API follows common REST conventions:
 -   Validation is handled via Symfony Validator
 -   Services contain all business logic
 -   Entities are never exposed directly to the API
+-   Response DTOs define the public API output format
+-   Dedicated mappers convert Entities to Response DTOs
+-   Controllers never expose Doctrine entities directly
 
 ## Running the project
 
@@ -186,7 +192,7 @@ http://localhost:8000
 -   Filtering: done
 -   Update (PATCH): done
 -   Delete: done
--   Response DTOs: pending
+-   Response DTOs: done
 -   Authentication & authorization: pending
 
 ## Purpose

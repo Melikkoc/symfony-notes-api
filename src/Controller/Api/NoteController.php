@@ -17,6 +17,7 @@ use App\Service\NotePatchService;
 use App\Service\NoteDeleteService;
 use App\Exception\NoteNotFoundException;
 use App\Mapper\NoteResponseMapper;
+use App\Mapper\ListResponseMapper;
 
 class NoteController extends AbstractController
 {
@@ -67,7 +68,7 @@ class NoteController extends AbstractController
     }
 
     #[Route('/api/note', name: 'get_notes', methods:['GET'])]
-    public function getNotes(Request $request, NoteListService $noteList, NoteResponseMapper $mapper): JsonResponse
+    public function getNotes(Request $request, NoteListService $noteList, ListResponseMapper $listResponseMapper): JsonResponse
     {
 
         $page = (int) $request->query->get('page');
@@ -77,12 +78,16 @@ class NoteController extends AbstractController
         $search = $request->query->get('search');
 
 
-        $notes = $noteList->listNotes($page, $limit, $sortBy, $order, $search);
+        $result = $noteList->listNotes($page, $limit, $sortBy, $order, $search);
 
-        
-        return $this->json([
-            'notes' => $notes
-        ], 200);
+        $responseDto = $listResponseMapper->mapList(
+            $result['notes'],
+            $result['page'],
+            $result['limit'],
+            $result['total']
+    );
+
+    return $this->json($responseDto, 200);
     }
 
     #[Route('/api/note/{id}', name: 'patch_note', methods:['PATCH'])]

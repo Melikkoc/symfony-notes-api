@@ -2,11 +2,12 @@
 namespace App\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Note;
 
-class NoteListService 
+class NoteListService
 {
-
     private EntityManagerInterface $em;
+
     private const DEFAULT_LIMIT = 10;
     private const MAX_LIMIT = 20;
 
@@ -15,97 +16,81 @@ class NoteListService
         $this->em = $em;
     }
 
+    /**
+     * @return array{
+     *     notes: Note[],
+     *     page: int,
+     *     limit: int,
+     *     total: int
+     * }
+     */
     public function listNotes(
-        int $page, 
+        int $page,
         int $limit,
         string $sortBy,
         string $order,
         ?string $search
-        ):array 
-    {   
-
+    ): array {
         if ($page < 1) {
             $page = 1;
-        } 
+        }
+
         if ($limit <= 0) {
             $limit = self::DEFAULT_LIMIT;
-        } 
-        
+        }
+
         $limit = min($limit, self::MAX_LIMIT);
-                
         $offset = ($page - 1) * $limit;
 
-        $itemsQb = $this->em->createQueryBuilder();
-
-        $sortList = [
+        $sortMap = [
             'id' => 'n.id',
             'title' => 'n.title',
             'createdAt' => 'n.createdAt',
         ];
 
-        if (!array_key_exists($sortBy, $sortList)) {
+        if (!isset($sortMap[$sortBy])) {
             $sortBy = 'createdAt';
         }
-        
-        $sortOrder = ['ASC', 'DESC'];
 
-        if (!in_array($order, $sortOrder)) {
-            $order = 'DESC';
+        $order = strtoupper($order) === 'ASC' ? 'ASC' : 'DESC';
+
+        /** ITEMS QUERY */
+        $itemsQb = $this->em->createQueryBuilder()
+            ->select('n')
+            ->from(Note::class, 'n');
+
+        if ($search !== null && $search !== '') {
+            $itemsQb
+                ->andWhere('n.title LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
         }
 
-        $itemsQb->select('n')
-           ->from('App\Entity\Note', 'n');
+        $itemsQb
+            ->orderBy($sortMap[$sortBy], $order)
+            ->addOrderBy('n.id', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
 
-        if ($search !== null && $search !== '') {   
-           $itemsQb
-           ->andWhere('n.title LIKE :search')
-           ->setParameter('search', '%' . $search . '%');
+        $notes = $itemsQb->getQuery()->getResult();
+
+        /** COUNT QUERY */
+        $countQb = $this->em->createQueryBuilder()
+            ->select('COUNT(n.id)')
+            ->from(Note::class, 'n');
+
+        if ($search !== null && $search !== '') {
+            $countQb
+                ->andWhere('n.title LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
         }
 
-        $itemsQb->orderBy($sortList[$sortBy], $order)
-           ->addOrderBy('n.id', 'DESC')
-           ->setFirstResult( $offset )
-           ->setMaxResults( $limit );
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
 
-
-        $itemsQuery = $itemsQb->getQuery();
-        $notes = $itemsQuery->getResult();
-        
-        $items = [];
-
-        foreach ($notes as $note) {
-            $items[] = [
-                'id' => $note->getId(),
-                'title' => $note->getTitle(),
-                'content' => $note->getContent(),
-                'createdAt' => $note->getCreatedAt()->format('Y-m-d H:i:s'),
-            ];
-        }
-
-        $countQb = $this->em->createQueryBuilder();
-
-        $countQb->select('COUNT(n.id)')
-                ->from('App\Entity\Note', 'n');
-                
-        if ($search !== null && $search !== '') {   
-           $countQb
-           ->andWhere('n.title LIKE :search')
-           ->setParameter('search', '%' . $search . '%');
-        }
-
-        $countQuery = $countQb->getQuery();   
-        $total = $countQuery->getSingleScalarResult();   
-
-        $meta = [
+        return [
+            'notes' => $notes,
             'page' => $page,
             'limit' => $limit,
-            'total' => $total
-        ];
-
-    
-        return [ 
-            'meta' => $meta,   
-            'items' => $items
+            'total' => $total,
         ];
     }
 }
