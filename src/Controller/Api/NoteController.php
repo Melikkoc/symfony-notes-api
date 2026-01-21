@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Dto\CreateNoteRequestDto;
 use App\Dto\UpdateNoteRequestDto;
+use App\Entity\Note;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -15,6 +16,7 @@ use App\Service\NoteListService;
 use App\Service\NotePatchService;
 use App\Service\NoteDeleteService;
 use App\Exception\NoteNotFoundException;
+use App\Mapper\NoteResponseMapper;
 
 class NoteController extends AbstractController
 {
@@ -54,25 +56,22 @@ class NoteController extends AbstractController
         'createdAt' => $note->getCreatedAt()->format('Y-m-d H:i:s'),
         ], 201);
     }
+
     #[Route('/api/note/{id}', name: 'get_note', methods:['GET'])]
-    public function getNotebyId(int $id, NoteReadService $noteReadService): JsonResponse
+    public function getNotebyId(int $id, NoteReadService $noteReadService, NoteResponseMapper $mapper): JsonResponse
     {
         $note = $noteReadService->readNote($id);
 
         if ($note === null) {
             return $this->json(['error' => 'Note not found'], 404);
-        } else {
-        return $this->json([
-        'id' => $note->getId(),
-        'title' => $note->getTitle(),
-        'content' => $note->getContent(),
-        'createdAt' => $note->getCreatedAt()->format('Y-m-d H:i:s'),
-        ], 200);
-        }
+        } 
+        
+        $dto = $mapper->mapNote($note);
+        return $this->json($dto, 200);
     }
 
     #[Route('/api/note', name: 'get_notes', methods:['GET'])]
-    public function getNotes(Request $request, NoteListService $noteList): JsonResponse
+    public function getNotes(Request $request, NoteListService $noteList, ): JsonResponse
     {
 
         $page = (int) $request->query->get('page');
