@@ -60,7 +60,7 @@ class NoteController extends AbstractController
         try {
            $note = $noteReadService->readNote($id);
         } catch (NoteNotFoundException $e) {
-            return $this->json(['error' => 'Note not found'], 404);
+            return $this->json(['error' => $e->getMessage()], 404);
         }
 
         $responseDto = $mapper->mapNote($note);

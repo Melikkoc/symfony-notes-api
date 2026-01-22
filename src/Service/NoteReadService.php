@@ -22,7 +22,7 @@ class NoteReadService {
         $note = $this->em->getRepository(Note::class)->find($id);
 
         if (!$note || $note->getOwner() !== $user){
-            throw new NoteNotFoundException();
+            throw new NoteNotFoundException('No Note found for id ' . $id);
         }
 
         return $note;
