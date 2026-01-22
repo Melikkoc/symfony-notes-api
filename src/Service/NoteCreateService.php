@@ -4,19 +4,24 @@ namespace App\Service;
 use App\Dto\CreateNoteRequestDto;
 use App\Entity\Note;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class NoteCreateService {
     private EntityManagerInterface $em;
-    
-    public function __construct(EntityManagerInterface $em)
+    private Security $security;
+    public function __construct(EntityManagerInterface $em, Security $security)
     {
         $this->em = $em;
+        $this->security = $security;
     }
 
 public function createNote(CreateNoteRequestDto $dto): Note
 {
 
+    $user = $this->security->getUser();
+
     $note = new Note();
+    $note->setOwner($user);
     $note->setTitle($dto->title);
     $note->setContent($dto->content);
     $note->setCreatedAt(new \DateTimeImmutable());
