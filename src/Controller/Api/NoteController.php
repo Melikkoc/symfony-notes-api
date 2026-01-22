@@ -4,7 +4,6 @@ namespace App\Controller\Api;
 
 use App\Dto\CreateNoteRequestDto;
 use App\Dto\UpdateNoteRequestDto;
-use App\Entity\Note;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
