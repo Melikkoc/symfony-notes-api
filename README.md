@@ -4,29 +4,34 @@ A RESTful API built with Symfony and Doctrine for managing notes.
 
 This project is a backend learning playground focused on:
 
--   clean architecture
--   separation of concerns (Controller / Service / DTO)
--   validation
--   pagination, sorting and filtering
--   proper error handling
--   RESTful API design
--   Response DTOs for all API outputs
--   Explicit response mapping (Entity → DTO)
--   Stable and predictable API response schema
+- clean architecture
+- separation of concerns (Controller / Service / DTO)
+- validation
+- pagination, sorting and filtering
+- proper error handling
+- RESTful API design
+- Response DTOs for all API outputs
+- Explicit response mapping (Entity → DTO)
+- Stable and predictable API response schema
+- User registration
+- JWT-based authentication
+- Stateless API security
+- Ownership-based access control
+- Notes are scoped to the authenticated user
 
 The codebase is intentionally structured to reflect real-world backend practices.
 
 ## Features
 
--   Create notes
--   Read a single note by ID
--   List notes with pagination
--   Sorting (id, title, createdAt)
--   Filtering by title (search)
--   Partial updates using PATCH
--   Delete notes
--   Input validation with meaningful HTTP status codes
--   Business logic isolated in services
+- Create notes
+- Read a single note by ID
+- List notes with pagination
+- Sorting (id, title, createdAt)
+- Filtering by title (search)
+- Partial updates using PATCH
+- Delete notes
+- Input validation with meaningful HTTP status codes
+- Business logic isolated in services
 
 ## API Endpoints
 
@@ -66,11 +71,11 @@ GET /api/note?page=1&limit=10&sortBy=createdAt&order=DESC&search=note
 
 Query parameters:
 
--   page (int, optional)
--   limit (int, optional)
--   sortBy (id | title | createdAt)
--   order (ASC | DESC)
--   search (optional, filters by title)
+- page (int, optional)
+- limit (int, optional)
+- sortBy (id | title | createdAt)
+- order (ASC | DESC)
+- search (optional, filters by title)
 
 Response:
 
@@ -123,26 +128,96 @@ Responses:
 204 No Content  
 404 Not Found
 
+### Register user
+
+POST /api/register
+
+Request body:
+
+```json
+{
+    "email": "user@example.com",
+    "password": "secret-password"
+}
+```
+
+Responses:
+201 Created
+409 Conflict
+422 Unprocessable Entity
+
+### Login (JWT)
+
+POST /api/login_check
+
+Request body:
+
+```json
+{
+    "email": "user@example.com",
+    "password": "secret-password"
+}
+```
+
+Response:
+
+```json
+{
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+}
+```
+
+Responses:
+200 OK
+401 Unauthorized
+
+## Authentication & Authorization
+
+This API uses JWT (JSON Web Tokens) for authentication.
+
+- Users authenticate via `/api/login_check`
+- A valid JWT token is required for all `/api/*` endpoints
+- Authentication is stateless (no sessions, no cookies)
+- Tokens must be sent via the `Authorization` header:
+
+```http
+Authorization: Bearer <token>
+```
+
+- Only `/api/register` and `/api/login_check` are publicly accessible
+
 ## HTTP Semantics
 
 This API follows common REST conventions:
 
--   200 OK for successful reads and updates
--   201 Created for resource creation
--   400 Bad Request for malformed input
--   404 Not Found when a resource does not exist
--   422 Unprocessable Entity for validation errors
+- 200 OK for successful reads and updates
+- 201 Created for resource creation
+- 400 Bad Request for malformed input
+- 404 Not Found when a resource does not exist
+- 422 Unprocessable Entity for validation errors
+
+## Ownership Model
+
+- Each Note belongs to exactly one User
+- Notes are always created with the authenticated user as owner
+- List endpoints return only notes owned by the current user
+- Accessing another user’s note returns 404 Not Found
+- Update and delete operations are restricted to the note owner
 
 ## Architecture Overview
 
--   Controllers handle HTTP concerns only (request/response)
--   DTOs define the API contract and input structure
--   Validation is handled via Symfony Validator
--   Services contain all business logic
--   Entities are never exposed directly to the API
--   Response DTOs define the public API output format
--   Dedicated mappers convert Entities to Response DTOs
--   Controllers never expose Doctrine entities directly
+- Controllers handle HTTP concerns only (request/response)
+- DTOs define the API contract and input structure
+- Validation is handled via Symfony Validator
+- Services contain all business logic
+- Entities are never exposed directly to the API
+- Response DTOs define the public API output format
+- Dedicated mappers convert Entities to Response DTOs
+- Controllers never expose Doctrine entities directly
+- Authentication handled via Symfony Security and JWT
+- Authorization and ownership enforced in the service layer
+- Security context accessed via Symfony Security service
+- Controllers contain no authentication or authorization logic
 
 ## Running the project
 
@@ -178,22 +253,24 @@ http://localhost:8000
 
 ## Tech Stack
 
--   PHP
--   Symfony
--   Doctrine ORM
--   PostgreSQL
+- PHP
+- Symfony
+- Doctrine ORM
+- PostgreSQL
 
 ## Project Status
 
--   Create note: done
--   Read single note: done
--   List notes & pagination: done
--   Sorting: done
--   Filtering: done
--   Update (PATCH): done
--   Delete: done
--   Response DTOs: done
--   Authentication & authorization: pending
+- Create note: done
+- Read single note: done
+- List notes & pagination: done
+- Sorting: done
+- Filtering: done
+- Update (PATCH): done
+- Delete: done
+- Response DTOs: done
+- Authentication (JWT): done
+- Ownership enforcement: done
+- Authorization basics: done
 
 ## Purpose
 
@@ -202,6 +279,13 @@ backend development with Symfony.
 
 The focus is on correctness, clarity, and long-term maintainability rather than
 shortcuts or framework magic.
+
+## Security Notes
+
+- Stateless JWT authentication
+- No Doctrine entities exposed through the API
+- Ownership checks implemented at service level
+- Consistent error responses to avoid information leakage
 
 ## Notes
 
