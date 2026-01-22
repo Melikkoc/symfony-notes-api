@@ -7,8 +7,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Dto\RegisterUserRequestDto;
+use App\Dto\LoginRequestDto;
 use App\Service\RegisterUserService;
+use App\Service\LoginService;
 use App\Exception\UserAlreadyExistsException;
+use App\Exception\LoginFailedException;
 
 class AuthController extends AbstractController
 {
@@ -47,5 +50,42 @@ class AuthController extends AbstractController
         }
 
         return $this->json(['message' => 'User registered successfully'], 201);
+    }
+
+    #[Route('/api/login', name:'api_login', methods: ['POST'])]
+    public function loginUser(Request $request, ValidatorInterface $validator, LoginService $service):JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!is_array($data)) {
+            return $this->json(['error' => 'Invalid JSON Body'], 400);
+        }
+        
+        $dto = new LoginRequestDto();
+
+        $dto->email = $data['email'] ?? null;
+        $dto->password = $data['password'] ?? null;
+
+        $errors = $validator->validate($dto);
+
+        if(count($errors) > 0) {
+            $formattedErrors = [];
+            foreach ($errors as $error) {
+                $field = $error->getPropertyPath();
+                $formattedErrors[$field][] = $error->getMessage();
+            }
+            return $this->json(['errors' => $formattedErrors], 422 );
+        }
+        
+        try {
+        $service->loginUser($dto);
+        } catch (LoginFailedException $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                401
+            );    
+        }
+
+        return $this->json(['message' => 'Login successful'], 200);
     }
 }
