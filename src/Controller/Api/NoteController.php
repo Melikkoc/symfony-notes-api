@@ -56,11 +56,12 @@ class NoteController extends AbstractController
     #[Route('/api/note/{id}', name: 'get_note', methods:['GET'])]
     public function getNotebyId(int $id, NoteReadService $noteReadService, NoteResponseMapper $mapper): JsonResponse
     {
-        $note = $noteReadService->readNote($id);
 
-        if ($note === null) {
+        try {
+           $note = $noteReadService->readNote($id);
+        } catch (NoteNotFoundException $e) {
             return $this->json(['error' => 'Note not found'], 404);
-        } 
+        }
 
         $responseDto = $mapper->mapNote($note);
         return $this->json($responseDto, 200);

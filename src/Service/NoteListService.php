@@ -3,17 +3,20 @@ namespace App\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Note;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class NoteListService
 {
     private EntityManagerInterface $em;
+    private Security $security;
 
     private const DEFAULT_LIMIT = 10;
     private const MAX_LIMIT = 20;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, Security $security)
     {
         $this->em = $em;
+        $this->security = $security;
     }
 
     /**
@@ -54,10 +57,14 @@ class NoteListService
 
         $order = strtoupper($order) === 'ASC' ? 'ASC' : 'DESC';
 
+        $user = $this->security->getUser();
+
         /** ITEMS QUERY */
         $itemsQb = $this->em->createQueryBuilder()
             ->select('n')
-            ->from(Note::class, 'n');
+            ->from(Note::class, 'n')
+            ->where('n.owner = :user')
+            ->setParameter('user', $user);
 
         if ($search !== null && $search !== '') {
             $itemsQb
@@ -76,7 +83,9 @@ class NoteListService
         /** COUNT QUERY */
         $countQb = $this->em->createQueryBuilder()
             ->select('COUNT(n.id)')
-            ->from(Note::class, 'n');
+            ->from(Note::class, 'n')
+            ->where('n.owner = :user')
+            ->setParameter('user', $user);
 
         if ($search !== null && $search !== '') {
             $countQb
