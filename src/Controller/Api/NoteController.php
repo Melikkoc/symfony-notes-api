@@ -85,9 +85,9 @@ class NoteController extends AbstractController
             $result['page'],
             $result['limit'],
             $result['total']
-    );
+        );
 
-    return $this->json($responseDto, 200);
+        return $this->json($responseDto, 200);
     }
 
     #[Route('/api/note/{id}', name: 'patch_note', methods:['PATCH'])]
@@ -126,7 +126,7 @@ class NoteController extends AbstractController
         }
 
         try {
-        $note = $notePatchService->patchNote($id, $dto);
+            $note = $notePatchService->patchNote($id, $dto);
         } catch (NoteNotFoundException $e) {
             return $this->json(
                 ['error' => $e->getMessage()],

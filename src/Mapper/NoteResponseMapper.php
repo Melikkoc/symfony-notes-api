@@ -4,7 +4,8 @@ namespace App\Mapper;
 use App\Entity\Note;
 use App\Dto\Response\NoteResponseDto;
 
-class NoteResponseMapper{
+class NoteResponseMapper
+{
 
     public function mapNote(Note $note):NoteResponseDto {
 

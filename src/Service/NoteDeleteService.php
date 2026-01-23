@@ -15,7 +15,7 @@ class NoteDeleteService {
         $this->security = $security;
     }
 
-    public function deleteNote(int $id) 
+    public function deleteNote(int $id): void 
     {
         $user = $this->security->getUser();
 
