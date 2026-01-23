@@ -29,7 +29,6 @@ public function createNote(CreateNoteRequestDto $dto): Note
     $note->setOwner($user);
     $note->setTitle($dto->title);
     $note->setContent($dto->content);
-    $note->setCreatedAt(new \DateTimeImmutable());
 
     $this->em->persist($note);
     $this->em->flush();
