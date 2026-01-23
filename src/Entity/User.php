@@ -111,16 +111,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
-    public function removeNote(Note $note): static
-    {
-        if ($this->notes->removeElement($note)) {
-            // set the owning side to null (unless already changed)
-            if ($note->getOwner() === $this) {
-                $note->setOwner(null);
-            }
-        }
-
-        return $this;
-    }
 }

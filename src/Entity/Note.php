@@ -23,7 +23,7 @@ class Note
 
     #[ORM\ManyToOne(inversedBy: 'notes')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $owner = null;
+    private User $owner;
 
     public function getId(): ?int
     {
@@ -66,12 +66,12 @@ class Note
         return $this;
     }
 
-    public function getOwner(): ?User
+    public function getOwner(): User
     {
         return $this->owner;
     }
 
-    public function setOwner(?User $owner): static
+    public function setOwner(User $owner): static
     {
         $this->owner = $owner;
 
