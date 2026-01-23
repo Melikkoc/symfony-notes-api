@@ -25,7 +25,7 @@ class Note
     #[ORM\JoinColumn(nullable: false)]
     private User $owner;
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
