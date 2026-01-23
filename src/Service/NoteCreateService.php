@@ -20,6 +20,10 @@ public function createNote(CreateNoteRequestDto $dto): Note
 
     $user = $this->security->getUser();
 
+    if (!$user instanceof \App\Entity\User) {
+        throw new \RuntimeException('User must be authenticated to create a note.');
+    }
+
     $note = new Note();
     $note->setOwner($user);
     $note->setTitle($dto->title);
