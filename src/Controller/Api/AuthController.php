@@ -23,8 +23,8 @@ class AuthController extends AbstractController
 
         $dto = new RegisterUserRequestDto();
         
-        $dto->email = $data['email'] ?? null;
-        $dto->password = $data['password'] ?? null;
+        $dto->email = $data['email'] ?? '';
+        $dto->password = $data['password'] ?? '';
 
         $errors = $validator->validate($dto);
 
