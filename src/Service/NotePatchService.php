@@ -19,14 +19,18 @@ class NotePatchService {
     public function patchNote(int $id, UpdateNoteRequestDto $dto): Note
     {
         $user = $this->security->getUser();
-
+        
+        if (!$user instanceof \App\Entity\User) {
+            throw new NoteNotFoundException('No note found for id ' . $id);
+        
+            }        
         $note = $this->em->getRepository(Note::class)->find($id);
 
         if (!$note) {
             throw new NoteNotFoundException('No note found for id ' . $id);
         }
         
-        if ($note->getOwner() !== $user){
+        if ($note->getOwner()?->getId() !== $user->getId()) {
             throw new NoteNotFoundException('No Note found for id ' . $id);
         }
 
