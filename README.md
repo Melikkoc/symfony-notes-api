@@ -32,6 +32,13 @@ The codebase is intentionally structured to reflect real-world backend practices
 - Delete notes
 - Input validation with meaningful HTTP status codes
 - Business logic isolated in services
+- Docker-based development and production environments
+- Docker Compose profiles for strict dev / prod separation
+- Multi-stage Docker builds for optimized production images
+- Separate PostgreSQL databases and volumes for dev and prod
+- Zero local runtime dependencies (PHP, Composer, PostgreSQL)
+- Makefile for standardized and repeatable workflows
+- Environment-based configuration via .env and .env.dev
 
 ## API Endpoints
 
@@ -219,58 +226,198 @@ This API follows common REST conventions:
 - Security context accessed via Symfony Security service
 - Controllers contain no authentication or authorization logic
 
-## Running the project
+## Container & Environment Design
 
-1. Install dependencies:
+- The application runs fully inside Docker containers
+- No services run directly on the host machine
+- Development and production are isolated using Docker Compose profiles
+- Each profile has:
+    - its own PHP container
+    - its own PostgreSQL container
+    - its own persistent Docker volume
+- Switching environments does not affect data integrity
+
+This setup mirrors real-world deployment and staging workflows.
+
+## Requirements
+
+You need the following tools installed:
+
+- Docker
+- Docker Compose
+- GNU Make
+- Git
+
+No local Symfony, PHP, Composer or PostgreSQL installation is required.
+
+## Project Setup
+
+This project is fully containerized using Docker and Docker Compose.
+A Makefile is included to simplify and standardize commonly used commands.
+You are encouraged to use it once the project is running.
+
+The setup is based on two Docker profiles:
+• dev – development environment
+• prod – production-like environment
+
+Both profiles run independently and use separate databases and volumes.
+
+⸻
+
+1. Clone the repository
 
 ```bash
-composer install
+git clone https://github.com//symfony-notes-api.git
 ```
-
-2. Configure environment variables:
 
 ```bash
-cp .env .env.local
+cd symfony-notes-api/backend
 ```
 
-3. Run migrations:
+⸻
+
+2. Environment files
+
+This project does not ship ready-to-use secrets or environment files.
+You must create the environment configuration yourself.
+
+Required environment files:
+• .env
+• .env.dev
+
+JWT keys are not included in the repository and are generated locally after the first startup.
+
+The environment files only define configuration values.
+
+.env (production defaults):
+• DATABASE_URL pointing to db-prod
+• JWT_PASSPHRASE
+
+.env.dev (development):
+• DATABASE_URL pointing to db-dev
+• No JWT passphrase required
+
+The development environment can be started without JWT keys.
+JWT keys are generated inside the running PHP container after the initial startup.
+
+Example difference:
+• .env uses db-prod
+• .env.dev uses db-dev
+
+All other values can stay identical.
+
+⸻
+
+3. First start (development)
+
+For the first run, build and start the dev environment:
 
 ```bash
-php bin/console doctrine:migrations:migrate
+docker compose --profile dev up --build
 ```
 
-4. Start the Symfony development server:
+Once the containers are running, execute migrations:
 
 ```bash
-symfony server:start
+docker compose exec php-dev php bin/console doctrine:migrations:migrate
 ```
 
-5. The API will be available at:
+This step is required only once per database.
+
+⸻
+
+4. The API will be available at:
 
 ```http
-http://localhost:8000
+http://localhost:8080
 ```
+
+⸻
+
+5. Subsequent starts (development)
+
+After the initial setup, start the dev environment with:
+
+```bash
+docker compose --profile dev up -d
+```
+
+⸻
+
+6. Switching between dev and prod
+
+When switching profiles, always stop the currently running stack first:
+
+```bash
+docker compose -p backend down
+```
+
+This removes containers but keeps database data intact.
+
+You can then start the other profile safely.
+
+⸻
+
+7. First start (production)
+
+The production profile simulates a real deployment environment.
+
+It uses:
+• a separate PHP image
+• optimized Composer install (no dev dependencies)
+• a dedicated PostgreSQL database
+• its own persistent Docker volume
+• production environment variables from .env
+
+For the first production run, build and start the stack:
+
+```bash
+docker compose --profile prod up --build
+```
+
+Once the containers are running, execute database migrations:
+
+```bash
+docker compose exec php php bin/console doctrine:migrations:migrate
+```
+
+This initializes the production database schema.
+
+⸻
+
+8. Subsequent starts (production)
+
+After the first setup, start production with:
+
+```bash
+docker compose --profile prod up -d
+```
+
+No rebuild or migration is required unless:
+• dependencies changed
+• migrations were added
+• Docker configuration changed
+
+⸻
+
+9. Makefile usage
+
+A Makefile is provided to shorten and standardize all common commands
+(dev, prod, migrations, logs, database access, queries).
+
+Refer to the Makefile itself for the available shortcuts and usage.
 
 ## Tech Stack
 
-- PHP
-- Symfony
-- Doctrine ORM
-- PostgreSQL
-
-## Project Status
-
-- Create note: done
-- Read single note: done
-- List notes & pagination: done
-- Sorting: done
-- Filtering: done
-- Update (PATCH): done
-- Delete: done
-- Response DTOs: done
-- Authentication (JWT): done
-- Ownership enforcement: done
-- Authorization basics: done
+- PHP 8.2
+- Symfony 7
+- Doctrine ORM & Migrations
+- PostgreSQL 16
+- JWT Authentication (LexikJWTAuthenticationBundle)
+- Docker
+- Docker Compose (profiles, multi-container setup)
+- Nginx
+- GNU Make
 
 ## Purpose
 
@@ -280,12 +427,19 @@ backend development with Symfony.
 The focus is on correctness, clarity, and long-term maintainability rather than
 shortcuts or framework magic.
 
+In addition to application-level architecture, this project also focuses on
+professional containerization, environment separation, and production-ready workflows
+using Docker, Docker Compose profiles, and multi-stage builds.
+
 ## Security Notes
 
 - Stateless JWT authentication
 - No Doctrine entities exposed through the API
 - Ownership checks implemented at service level
 - Consistent error responses to avoid information leakage
+- Secrets are never committed to the repository
+- JWT private keys are generated locally per environment
+- Production configuration differs explicitly from development
 
 ## Notes
 

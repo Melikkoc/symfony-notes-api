@@ -1,0 +1,125 @@
+services:
+    # =========================
+    # PHP (PROD)
+    # =========================
+    php:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        image: symfony-notes-php
+        profiles: ["prod"]
+        env_file:
+            - .env
+        environment:
+            APP_ENV: prod
+            JWT_PRIVATE_KEY_PATH: /run/secrets/jwt_private
+            JWT_PUBLIC_KEY_PATH: /run/secrets/jwt_public
+            JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+        secrets:
+            - jwt_private
+            - jwt_public
+        depends_on:
+            db-prod:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "php", "-v"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+
+    # =========================
+    # PHP (DEV)
+    # =========================
+    php-dev:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile.dev
+        profiles: ["dev"]
+        env_file:
+            - .env.dev
+        volumes:
+            - .:/app
+        environment:
+            APP_ENV: dev
+        depends_on:
+            db-dev:
+                condition: service_healthy
+
+    # =========================
+    # NGINX (PROD)
+    # =========================
+    nginx:
+        image: nginx:1.25-alpine
+        profiles: ["prod"]
+        depends_on:
+            php:
+                condition: service_healthy
+        volumes:
+            - .:/app:ro
+            - ./docker/nginx/default.prod.conf:/etc/nginx/conf.d/default.conf:ro
+        ports:
+            - "8080:80"
+
+    # =========================
+    # NGINX (DEV)
+    # =========================
+    nginx-dev:
+        image: nginx:1.25-alpine
+        profiles: ["dev"]
+        depends_on:
+            - php-dev
+        volumes:
+            - .:/app
+            - ./docker/nginx/default.dev.conf:/etc/nginx/conf.d/default.conf:ro
+        ports:
+            - "8080:80"
+
+    # =========================
+    # DATABASE (DEV)
+    # =========================
+    db-dev:
+        image: postgres:16-alpine
+        profiles: ["dev"]
+        env_file:
+            - .env.dev
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        volumes:
+            - pgdata_dev:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U notes"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # =========================
+    # DATABASE (PROD)
+    # =========================
+    db-prod:
+        image: postgres:16-alpine
+        profiles: ["prod"]
+        env_file:
+            - .env
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        volumes:
+            - pgdata_prod:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U notes"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+secrets:
+    jwt_private:
+        file: ./config/jwt/private.pem
+    jwt_public:
+        file: ./config/jwt/public.pem
+
+volumes:
+    pgdata_dev:
+    pgdata_prod:
