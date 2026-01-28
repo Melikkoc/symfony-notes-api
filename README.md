@@ -267,7 +267,7 @@ Both profiles run independently and use separate databases and volumes.
 1. Clone the repository
 
 ```bash
-git clone https://github.com//symfony-notes-api.git
+git clone https://github.com/Melikkoc/symfony-notes-api.git
 ```
 
 ```bash

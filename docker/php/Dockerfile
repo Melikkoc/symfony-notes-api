@@ -6,7 +6,7 @@ RUN apk add --no-cache \
     icu-dev \
     libxml2-dev \
     postgresql-dev \
-    libsodium \
+    libsodium-dev \
     oniguruma-dev \
     unzip \
     git
@@ -17,7 +17,8 @@ RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
     xml \
-    opcache
+    opcache \
+    sodium
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
