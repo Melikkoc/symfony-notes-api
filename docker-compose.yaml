@@ -22,7 +22,7 @@ services:
             db-prod:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD", "php", "-v"]
+            test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
             interval: 30s
             timeout: 5s
             retries: 3
@@ -44,6 +44,11 @@ services:
         depends_on:
             db-dev:
                 condition: service_healthy
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
 
     # =========================
     # NGINX (PROD)
@@ -89,7 +94,7 @@ services:
         volumes:
             - pgdata_dev:/var/lib/postgresql/data
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U notes"]
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
             interval: 10s
             timeout: 5s
             retries: 5
@@ -109,7 +114,7 @@ services:
         volumes:
             - pgdata_prod:/var/lib/postgresql/data
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U notes"]
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
             interval: 10s
             timeout: 5s
             retries: 5

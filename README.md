@@ -174,6 +174,14 @@ Response:
 }
 ```
 
+## Health Check
+
+GET /health
+
+Used for container liveness checks.
+
+Returns 200 OK if the application is running.
+
 Responses:
 200 OK
 401 Unauthorized
@@ -243,8 +251,7 @@ This setup mirrors real-world deployment and staging workflows.
 
 You need the following tools installed:
 
-- Docker
-- Docker Compose
+- Docker Desktop (includes Docker Compose v2)
 - GNU Make
 - Git
 
@@ -290,15 +297,24 @@ JWT keys are not included in the repository and are generated locally after the 
 The environment files only define configuration values.
 
 .env (production defaults):
+• POSTGRES_DB
+• POSTGRES_USER
+• POSTGRES_PASSWORD
 • DATABASE_URL pointing to db-prod
 • JWT_PASSPHRASE
 
 .env.dev (development):
+• POSTGRES_DB
+• POSTGRES_USER
+• POSTGRES_PASSWORD
 • DATABASE_URL pointing to db-dev
 • No JWT passphrase required
 
-The development environment can be started without JWT keys.
+In development, JWT key generation is optional until authentication endpoints are used.
 JWT keys are generated inside the running PHP container after the initial startup.
+
+POSTGRES\_\* variables are used by the PostgreSQL container.
+The application itself only relies on DATABASE_URL.
 
 Example difference:
 • .env uses db-prod
