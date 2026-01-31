@@ -4,7 +4,7 @@
 
 # Docker Compose project name.
 # Ensures all containers, networks and volumes are namespaced consistently.
-PROJECT=backend
+PROJECT=symfony-notes-api
 
 # Base docker compose command with fixed project name
 DC=docker compose -p $(PROJECT)

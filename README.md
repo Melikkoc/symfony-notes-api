@@ -174,18 +174,6 @@ Response:
 }
 ```
 
-## Health Check
-
-GET /health
-
-Used for container liveness checks.
-
-Returns 200 OK if the application is running.
-
-Responses:
-200 OK
-401 Unauthorized
-
 ## Authentication & Authorization
 
 This API uses JWT (JSON Web Tokens) for authentication.
@@ -264,8 +252,9 @@ A Makefile is included to simplify and standardize commonly used commands.
 You are encouraged to use it once the project is running.
 
 The setup is based on two Docker profiles:
-• dev – development environment
-• prod – production-like environment
+
+- dev – development environment
+- prod – production-like environment
 
 Both profiles run independently and use separate databases and volumes.
 
@@ -277,10 +266,6 @@ Both profiles run independently and use separate databases and volumes.
 git clone https://github.com/Melikkoc/symfony-notes-api.git
 ```
 
-```bash
-cd symfony-notes-api/backend
-```
-
 ⸻
 
 2. Environment files
@@ -289,38 +274,44 @@ This project does not ship ready-to-use secrets or environment files.
 You must create the environment configuration yourself.
 
 Required environment files:
-• .env
-• .env.dev
 
-JWT keys are not included in the repository and are generated locally after the first startup.
+- .env
+- .env.dev
 
-The environment files only define configuration values.
+    2.1 Create .env (production defaults)
 
-.env (production defaults):
-• POSTGRES_DB
-• POSTGRES_USER
-• POSTGRES_PASSWORD
-• DATABASE_URL pointing to db-prod
-• JWT_PASSPHRASE
+Copy the distributed template and fill in all required values:
 
-.env.dev (development):
-• POSTGRES_DB
-• POSTGRES_USER
-• POSTGRES_PASSWORD
-• DATABASE_URL pointing to db-dev
-• No JWT passphrase required
+```bash
+cp .env.dist .env
+```
 
-In development, JWT key generation is optional until authentication endpoints are used.
-JWT keys are generated inside the running PHP container after the initial startup.
+You must set the following variables in .env:
 
-POSTGRES\_\* variables are used by the PostgreSQL container.
-The application itself only relies on DATABASE_URL.
+- APP_SECRET
+- POSTGRES_DB
+- POSTGRES_USER
+- POSTGRES_PASSWORD
+- DATABASE_URL (must point to db-prod)
+- JWT_PASSPHRASE
 
-Example difference:
-• .env uses db-prod
-• .env.dev uses db-dev
+JWT values are not generated automatically.
+JWT_PASSPHRASE must be explicitly defined by you.
 
-All other values can stay identical.
+2.2 Create .env.dev (development)
+
+Create a minimal development environment file:
+
+- env.dev must contain only:
+- POSTGRES_DB
+- POSTGRES_USER
+- POSTGRES_PASSWORD
+- DATABASE_URL (must point to db-dev)
+
+No APP_SECRET or JWT_PASSPHRASE is required for development startup.
+
+The PostgreSQL container uses the POSTGRES\_\* variables.
+The Symfony application itself relies only on DATABASE_URL.
 
 ⸻
 
@@ -332,17 +323,65 @@ For the first run, build and start the dev environment:
 docker compose --profile dev up --build
 ```
 
-Once the containers are running, execute migrations:
+⸻
+
+4. Install PHP dependencies (development)
+
+In the development environment, dependencies are not installed automatically.
+
+This is intentional:
+
+- the source code is mounted as a volume
+- rebuilding the image on every change is avoided
+
+Run Composer once inside the container:
+
+```bash
+docker compose exec php-dev composer install
+```
+
+In production, dependencies are installed automatically during the Docker image build.
+
+This installs the vendor/ directory and prepares the application.
+
+⸻
+
+5. Generate JWT keys (development)
+
+Create the JWT directory if it does not exist:
+
+```bash
+mkdir -p config/jwt
+```
+
+Generate the key pair inside the running container:
+
+```bash
+docker compose exec php-dev php bin/console lexik:jwt:generate-keypair
+```
+
+This creates:
+
+- config/jwt/private.pem
+- config/jwt/public.pem
+
+⸻
+
+6. Run database migrations (development)
+
+Initialize the database schema:
 
 ```bash
 docker compose exec php-dev php bin/console doctrine:migrations:migrate
 ```
 
-This step is required only once per database.
+This step is required once per database.
 
 ⸻
 
-4. The API will be available at:
+7. Access the API
+
+The API is available at:
 
 ```http
 http://localhost:8080
@@ -350,7 +389,7 @@ http://localhost:8080
 
 ⸻
 
-5. Subsequent starts (development)
+8. Subsequent starts (development)
 
 After the initial setup, start the dev environment with:
 
@@ -360,68 +399,46 @@ docker compose --profile dev up -d
 
 ⸻
 
-6. Switching between dev and prod
+9. Switching between dev and prod
 
-When switching profiles, always stop the currently running stack first:
+Before switching profiles, always stop the current stack:
 
 ```bash
-docker compose -p backend down
+docker compose -p symfony-notes-api down
 ```
 
-This removes containers but keeps database data intact.
-
-You can then start the other profile safely.
+Containers are removed, but database volumes remain intact.
 
 ⸻
 
-7. First start (production)
+10. Production startup
 
-The production profile simulates a real deployment environment.
-
-It uses:
-• a separate PHP image
-• optimized Composer install (no dev dependencies)
-• a dedicated PostgreSQL database
-• its own persistent Docker volume
-• production environment variables from .env
-
-For the first production run, build and start the stack:
+Build and start the production stack:
 
 ```bash
 docker compose --profile prod up --build
 ```
 
-Once the containers are running, execute database migrations:
+Run migrations once:
 
 ```bash
 docker compose exec php php bin/console doctrine:migrations:migrate
 ```
 
-This initializes the production database schema.
-
-⸻
-
-8. Subsequent starts (production)
-
-After the first setup, start production with:
+Subsequent starts:
 
 ```bash
 docker compose --profile prod up -d
 ```
 
-No rebuild or migration is required unless:
-• dependencies changed
-• migrations were added
-• Docker configuration changed
-
 ⸻
 
-9. Makefile usage
+11. Makefile usage
 
-A Makefile is provided to shorten and standardize all common commands
+A Makefile is provided to standardize common workflows
 (dev, prod, migrations, logs, database access, queries).
 
-Refer to the Makefile itself for the available shortcuts and usage.
+Refer to the Makefile itself for available commands and usage.
 
 ## Tech Stack
 
