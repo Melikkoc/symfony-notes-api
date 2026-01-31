@@ -278,7 +278,9 @@ Required environment files:
 - .env
 - .env.dev
 
-    2.1 Create .env (production defaults)
+⸻
+
+2.1 Create .env (production defaults)
 
 Copy the distributed template and fill in all required values:
 
@@ -300,6 +302,8 @@ You must generate the JWT key pair manually (see step 5).
 
 In production, JWT_PASSPHRASE must be set and must match the passphrase
 that was used when generating the private key.
+
+⸻
 
 2.2 Create .env.dev (development)
 
