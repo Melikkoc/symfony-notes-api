@@ -309,7 +309,7 @@ that was used when generating the private key.
 
 Create a minimal development environment file:
 
-- env.dev must contain only:
+- .env.dev must contain only:
 - POSTGRES_DB
 - POSTGRES_USER
 - POSTGRES_PASSWORD
