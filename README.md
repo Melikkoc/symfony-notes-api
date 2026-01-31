@@ -352,7 +352,7 @@ This installs the vendor/ directory and prepares the application.
 
 ⸻
 
-5. Generate JWT keys (development)
+5. Generate JWT keys (one-time setup)
 
 Create the JWT directory if it does not exist:
 
