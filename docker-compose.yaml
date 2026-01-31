@@ -115,12 +115,6 @@ services:
             timeout: 5s
             retries: 5
 
-secrets:
-    jwt_private:
-        file: ./config/jwt/private.pem
-    jwt_public:
-        file: ./config/jwt/public.pem
-
 volumes:
     pgdata_dev:
     pgdata_prod:
