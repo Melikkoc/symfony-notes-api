@@ -293,10 +293,13 @@ You must set the following variables in .env:
 - POSTGRES_USER
 - POSTGRES_PASSWORD
 - DATABASE_URL (must point to db-prod)
-- JWT_PASSPHRASE
+- JWT_PASSPHRASE (same as .env.dev)
 
-JWT values are not generated automatically.
-JWT_PASSPHRASE must be explicitly defined by you.
+JWT keys are not generated automatically.
+You must generate the JWT key pair manually (see step 5).
+
+In production, JWT_PASSPHRASE must be set and must match the passphrase
+that was used when generating the private key.
 
 2.2 Create .env.dev (development)
 
@@ -307,8 +310,7 @@ Create a minimal development environment file:
 - POSTGRES_USER
 - POSTGRES_PASSWORD
 - DATABASE_URL (must point to db-dev)
-
-No APP_SECRET or JWT_PASSPHRASE is required for development startup.
+- JWT_PASSPHRASE (same as .env)
 
 The PostgreSQL container uses the POSTGRES\_\* variables.
 The Symfony application itself relies only on DATABASE_URL.
@@ -364,6 +366,11 @@ This creates:
 
 - config/jwt/private.pem
 - config/jwt/public.pem
+
+JWT keys are generated once and shared by both development and production.
+
+These files are not environment-specific.
+Do not regenerate keys when switching between dev and prod.
 
 ⸻
 

@@ -12,12 +12,7 @@ services:
             - .env
         environment:
             APP_ENV: prod
-            JWT_PRIVATE_KEY_PATH: /run/secrets/jwt_private
-            JWT_PUBLIC_KEY_PATH: /run/secrets/jwt_public
             JWT_PASSPHRASE: ${JWT_PASSPHRASE}
-        secrets:
-            - jwt_private
-            - jwt_public
         depends_on:
             db-prod:
                 condition: service_healthy
@@ -41,12 +36,6 @@ services:
             - .:/app
         environment:
             APP_ENV: dev
-            JWT_PRIVATE_KEY_PATH: /run/secrets/jwt_private
-            JWT_PUBLIC_KEY_PATH: /run/secrets/jwt_public
-            JWT_PASSPHRASE: ${JWT_PASSPHRASE}
-        secrets:
-            - jwt_private
-            - jwt_public
         depends_on:
             db-dev:
                 condition: service_healthy
