@@ -1,0 +1,24 @@
+FROM php:8.2-fpm-alpine
+
+RUN apk add --no-cache \
+    bash \
+    icu-dev \
+    libxml2-dev \
+    postgresql-dev \
+    libsodium-dev \
+    oniguruma-dev \
+    unzip \
+    git
+
+RUN docker-php-ext-install \
+    intl \
+    pdo \
+    pdo_pgsql \
+    xml \
+    sodium    
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+
+CMD ["php-fpm"]
