@@ -1,0 +1,31 @@
+# VCS
+.git
+.gitignore
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.dev
+!.env.dist
+
+# Secrets
+/config/secrets/prod/prod.decrypt.private.php
+/config/jwt/*.pem
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Runtime / cache
+/var/
+*.log
+.php-cs-fixer.cache
+
+# Frontend build output
+/public/bundles/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
