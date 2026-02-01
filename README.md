@@ -295,7 +295,7 @@ You must set the following variables in .env:
 - POSTGRES_USER
 - POSTGRES_PASSWORD
 - DATABASE_URL (must point to db-prod)
-- JWT_PASSPHRASE (same as .env.dev)
+- JWT_PASSPHRASE
 
 JWT keys are not generated automatically.
 You must generate the JWT key pair manually (see step 5).
@@ -314,7 +314,7 @@ Create a minimal development environment file:
 - POSTGRES_USER
 - POSTGRES_PASSWORD
 - DATABASE_URL (must point to db-dev)
-- JWT_PASSPHRASE (same as .env)
+- JWT_PASSPHRASE
 
 The PostgreSQL container uses the POSTGRES\_\* variables.
 The Symfony application itself relies only on DATABASE_URL.
@@ -352,15 +352,28 @@ This installs the vendor/ directory and prepares the application.
 
 ⸻
 
-5. Generate JWT keys (one-time setup)
+5. Generate JWT keys (per environment)
 
-Create the JWT directory if it does not exist:
+JWT keys are generated **per environment** and stored in environment-specific paths.
+
+The configuration resolves keys from:
+
+- config/jwt/dev (APP_ENV=dev)
+- config/jwt/prod (APP_ENV=prod)
+
+create these directories first
+
+⸻
+
+5.1 Generate JWT keys for development
+
+Make sure the dev environment is running:
 
 ```bash
-mkdir -p config/jwt
+docker compose --profile dev up -d
 ```
 
-Generate the key pair inside the running container:
+Generate the key pair:
 
 ```bash
 docker compose exec php-dev php bin/console lexik:jwt:generate-keypair
@@ -368,13 +381,29 @@ docker compose exec php-dev php bin/console lexik:jwt:generate-keypair
 
 This creates:
 
-- config/jwt/private.pem
-- config/jwt/public.pem
+- config/jwt/dev/private.pem
+- config/jwt/dev/public.pem
 
-JWT keys are generated once and shared by both development and production.
+⸻
 
-These files are not environment-specific.
-Do not regenerate keys when switching between dev and prod.
+5.2 Generate JWT keys for production
+
+Start the production environment:
+
+```bash
+docker compose --profile prod up -d
+```
+
+Generate the key pair:
+
+```bash
+docker compose exec php php bin/console lexik:jwt:generate-keypair
+```
+
+This creates:
+
+- config/jwt/prod/private.pem
+- config/jwt/prod/public.pem
 
 ⸻
 

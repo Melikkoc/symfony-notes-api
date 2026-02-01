@@ -10,6 +10,8 @@ services:
         profiles: ["prod"]
         env_file:
             - .env
+        volumes:
+            - ./config/jwt/prod:/app/config/jwt/prod
         environment:
             APP_ENV: prod
             JWT_PASSPHRASE: ${JWT_PASSPHRASE}
